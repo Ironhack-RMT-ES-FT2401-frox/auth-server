@@ -20,11 +20,22 @@ function isTokenValid(req, res, next) {
 
     next() // continua con la ruta
   } catch (error) {
-    console.log(error)
+    // console.log(error)
     res.status(401).json({ errorMessage: "Token no valido o expirado" });
   }
 }
 
+function isUserAdmin(req, res, next) {
+
+  if (req.payload.role === "admin") {
+    next() // continua con la ruta
+  } else {
+    res.status(401).json("no eres un admin, fuera de aqui")
+  }
+
+}
+
 module.exports = {
-  isTokenValid
+  isTokenValid,
+  isUserAdmin
 }

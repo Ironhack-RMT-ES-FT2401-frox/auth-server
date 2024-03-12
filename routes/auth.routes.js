@@ -4,7 +4,7 @@ const User = require("../models/User.model")
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const { isTokenValid } = require("../middlewares/auth.middlewares")
+const { isTokenValid, isUserAdmin } = require("../middlewares/auth.middlewares")
 
 // POST "/api/auth/signup" => recibir info del usuario y crear documento en la DB
 router.post("/signup", async (req, res, next) => {
@@ -91,8 +91,9 @@ router.post("/login", async (req, res, next) => {
     // creamos el Token y lo enviamos al cliente
     const payload = {
       _id: foundUser._id,
-      email: foundUser.email
+      email: foundUser.email,
       // si tuvieramos roles en nuestra app, tendrian que ir acá
+      role: foundUser.role
     }
 
     const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
@@ -120,9 +121,25 @@ router.get("/verify", isTokenValid, (req, res, next) => {
 
 router.get("/ejemplo-ruta-privada", isTokenValid, (req, res, next) => {
 
-  console.log(req.payload)
+  console.log(req.headers)
+  console.log(req.payload) // TODA RUTA QUE USE EL isTokenValid TIENE ACCESO A ESTO PARA SABER QUIEN ES EL USUARIO LOGEADO (EL USUARIO QUE ESTÁ HACIENDO LA LLAMADA)
 
   res.json({data: "data privada"})
+
+})
+
+router.get("/ejemplo-ruta-admin", isTokenValid, isUserAdmin, (req, res, next) => {
+
+  console.log(req.payload) // TODA RUTA QUE USE EL isTokenValid TIENE ACCESO A ESTO PARA SABER QUIEN ES EL USUARIO LOGEADO (EL USUARIO QUE ESTÁ HACIENDO LA LLAMADA)
+
+  // if (req.payload.role === "admin") {
+  //   res.json({data: "data privada solo para admins"})
+  // } else {
+  //   res.status(401).json("no eres un admin, fuera de aqui")
+  // }
+
+  res.json({data: "data privada solo para admins"})
+
 
 })
 
